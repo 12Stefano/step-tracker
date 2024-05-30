@@ -15,6 +15,9 @@ class HealthKitManager {
     
     let types: Set = [HKQuantityType(.stepCount), HKQuantityType(.bodyMass)]
     
+    var stepData: [HealthMetric] = []
+    var weightData: [HealthMetric] = []
+    
     func fetchStepCount() async {
         // Create a predicate for this week's samples.
         let calendar = Calendar.current
@@ -34,6 +37,10 @@ class HealthKitManager {
             intervalComponents: .init(day: 1))
 
         let stepCounts = try! await stepsQuery.result(for: store)
+        
+        stepData = stepCounts.statistics().map {
+            .init(date: $0.startDate, value: $0.sumQuantity()?.doubleValue(for: .count()) ?? 0)
+        }
         
     }
     
@@ -57,6 +64,9 @@ class HealthKitManager {
 
         let weights = try! await weightsQuery.result(for: store)
         
+        weightData = weights.statistics().map {
+            .init(date: $0.startDate, value: $0.mostRecentQuantity()?.doubleValue(for: .gram()) ?? 0)
+        }
     }
     
 //    Uncomment just to add mockup data on simulated device
