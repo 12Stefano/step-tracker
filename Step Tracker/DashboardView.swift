@@ -92,8 +92,6 @@ struct DashboardView: View {
                 }
                 .padding()
                 .task {
-//                    Uncomment just to add mockup data on simulated device
-//                    await hkManager.addSimulatorData()
                     isShowingPermissionPrimingSheet = !hasSeenPermissionPriming
                 }
             }
