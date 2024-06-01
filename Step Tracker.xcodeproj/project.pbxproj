@@ -98,8 +98,8 @@
 				4E3D902F2C077A4B00F62D2F /* HealthKitPermissionPrimingView.swift */,
 				4E215D172C06797800317B2F /* DashboardView.swift */,
 				4E3D902D2C07626200F62D2F /* HealthDataListView.swift */,
-				4E36FC682C09E8FE002357FA /* StepBarChartView.swift */,
-				4E94F1FD2C0A02F600C019CF /* StepPieChartView.swift */,
+				4E9B550A2C0B74F500F37A50 /* WeightView */,
+				4E9B55092C0B74EC00F37A50 /* StepView */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -128,6 +128,22 @@
 				4E36FC722C09EF1F002357FA /* Date+Extensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		4E9B55092C0B74EC00F37A50 /* StepView */ = {
+			isa = PBXGroup;
+			children = (
+				4E36FC682C09E8FE002357FA /* StepBarChartView.swift */,
+				4E94F1FD2C0A02F600C019CF /* StepPieChartView.swift */,
+			);
+			path = StepView;
+			sourceTree = "<group>";
+		};
+		4E9B550A2C0B74F500F37A50 /* WeightView */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = WeightView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
