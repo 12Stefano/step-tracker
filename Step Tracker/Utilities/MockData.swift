@@ -32,4 +32,16 @@ struct MockData {
         
         return array
     }
+    
+    static var weightDiffs: [WeekdayChartData] {
+        var diffs: [WeekdayChartData] = []
+        
+        for i in 0..<7 {
+            let metric = WeekdayChartData(date: Calendar.current.date(byAdding: .day, value: -i, to: .now)!, value: .random(in: -5...5)*1_000)
+            
+            diffs.append(metric)
+        }
+        
+        return diffs
+    }
 }
