@@ -108,7 +108,7 @@ struct WeightLineChartView: View {
                 .font(.footnote.bold())
                 .foregroundStyle(.secondary)
             
-            Text((selectedHealthMetric?.value ?? 0)/1_000, format: .number.precision(.fractionLength(1)))
+            Text(selectedHealthMetric?.value ?? 0, format: .number.precision(.fractionLength(1)))
                 .fontWeight(.heavy)
                 .foregroundStyle(.indigo)
         }
