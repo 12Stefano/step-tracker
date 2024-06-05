@@ -14,7 +14,6 @@ struct HealthDataListView: View {
     @State private var addDataDate: Date = .now
     @State private var valueToAdd: String = ""
     
-    @Binding var isShowingPermissionPriming: Bool
     
     var metric: HealthMetricContext
     
@@ -70,9 +69,6 @@ struct HealthDataListView: View {
                                     
                                     isShowingAddData = false
                                     
-                                } catch STError.authNotDetermined {
-                                    isShowingPermissionPriming = true
-                                    
                                 } catch STError.sharingDenied(let quantityType) {
                                     print("❌ Sharing denied for \(quantityType)")
                                     
@@ -87,9 +83,6 @@ struct HealthDataListView: View {
                                     try await hkManager.fetchWeigntForDifferentials()
                                     
                                     isShowingAddData = false
-                                    
-                                } catch STError.authNotDetermined {
-                                    isShowingPermissionPriming = true
                                     
                                 } catch STError.sharingDenied(let quantityType) {
                                     print("❌ Sharing denied for \(quantityType)")
@@ -115,7 +108,7 @@ struct HealthDataListView: View {
 
 #Preview {
     NavigationStack{
-        HealthDataListView(isShowingPermissionPriming: .constant(false), metric: .weight)
+        HealthDataListView(metric: .weight)
             .environment(HealthKitManager())
     }
 }
