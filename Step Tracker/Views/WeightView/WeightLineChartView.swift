@@ -49,53 +49,59 @@ struct WeightLineChartView: View {
             .foregroundStyle(.secondary)
             .padding(.bottom, 12)
             
-            Chart {
-                if let selectedHealthMetric {
-                    RuleMark(x: .value("Selected Metric", selectedHealthMetric.date, unit: .day))
-                        .foregroundStyle(Color.secondary.opacity(0.3))
-                        .offset(y: -10)
-                        .annotation(position: .top,
-                                    spacing: 0,
-                                    overflowResolution: .init(x: .fit(to: .chart),y: .disabled)) {
-                            AnnotationView
-                        }
-                }
+            if chartData.isEmpty {
+                ChartEmptyView(systemImage: "chart.xyaxis.line", title: "No data", description: "There is no step data from healt app.")
+            
+            } else {
                 
-                RuleMark(y: .value("Goal", 70_000))
-                    .foregroundStyle(.mint)
-                    .lineStyle(.init(lineWidth: 1, dash: [5]))
-                
-                ForEach(chartData) { weight in
-                    AreaMark(
-                        x: .value("Day", weight.date, unit: .day),
-                        yStart: .value("Value", weight.value),
-                        yEnd: .value("Min Value", minValue)
-                    )
-                    .foregroundStyle(Gradient(colors: [.indigo.opacity(0.5), .clear]))
+                Chart {
+                    if let selectedHealthMetric {
+                        RuleMark(x: .value("Selected Metric", selectedHealthMetric.date, unit: .day))
+                            .foregroundStyle(Color.secondary.opacity(0.3))
+                            .offset(y: -10)
+                            .annotation(position: .top,
+                                        spacing: 0,
+                                        overflowResolution: .init(x: .fit(to: .chart),y: .disabled)) {
+                                AnnotationView
+                            }
+                    }
                     
-                    LineMark(
-                        x: .value("Day", weight.date, unit: .day),
-                        y: .value("Value", weight.value)
-                    )
-                    .foregroundStyle(.indigo)
-                    .interpolationMethod(.catmullRom)
-                    .symbol(.circle)
-                }
-            }
-            .frame(height: 150)
-            .chartXSelection(value: $rawSelectedDate)
-            .chartYScale(domain:.automatic(includesZero: false))
-            .chartXAxis {
-                AxisMarks {
-                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
-                }
-            }
-            .chartYAxis {
-                AxisMarks { value in
-                    AxisGridLine()
-                        .foregroundStyle(Color.secondary.opacity(0.3))
+                    RuleMark(y: .value("Goal", 70_000))
+                        .foregroundStyle(.mint)
+                        .lineStyle(.init(lineWidth: 1, dash: [5]))
                     
-                    AxisValueLabel((value.as(Double.self) ?? 0).formatted(.number.scale(0.001)))
+                    ForEach(chartData) { weight in
+                        AreaMark(
+                            x: .value("Day", weight.date, unit: .day),
+                            yStart: .value("Value", weight.value),
+                            yEnd: .value("Min Value", minValue)
+                        )
+                        .foregroundStyle(Gradient(colors: [.indigo.opacity(0.5), .clear]))
+                        
+                        LineMark(
+                            x: .value("Day", weight.date, unit: .day),
+                            y: .value("Value", weight.value)
+                        )
+                        .foregroundStyle(.indigo)
+                        .interpolationMethod(.catmullRom)
+                        .symbol(.circle)
+                    }
+                }
+                .frame(height: 150)
+                .chartXSelection(value: $rawSelectedDate)
+                .chartYScale(domain:.automatic(includesZero: false))
+                .chartXAxis {
+                    AxisMarks {
+                        AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks { value in
+                        AxisGridLine()
+                            .foregroundStyle(Color.secondary.opacity(0.3))
+                        
+                        AxisValueLabel((value.as(Double.self) ?? 0).formatted(.number.scale(0.001)))
+                    }
                 }
             }
         }
