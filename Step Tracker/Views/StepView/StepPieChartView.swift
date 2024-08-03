@@ -13,9 +13,9 @@ struct StepPieChartView: View {
     @State private var rawSelectedChartValue: Double?
     @State private var selectedDay: Date?
     
-    var chartData: [WeekdayChartData] = []
+    var chartData: [DateValueChartData] = []
     
-    var selectedWeekday: WeekdayChartData? {
+    var selectedWeekday: DateValueChartData? {
         guard let rawSelectedChartValue else { return nil }
         var total = 0.0
         return chartData.first {
@@ -25,21 +25,17 @@ struct StepPieChartView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
-            VStack(alignment: .leading) {
-                Label("Averages", systemImage: "calendar")
-                    .font(.title3.bold())
-                    .foregroundStyle(.pink)
-                
-                Text("Last 28 days")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.bottom, 12)
+        let config = ChartContainerConfiguration(title: "Averages", 
+                                                 symbol: "calendar",
+                                                 subtitle: "Last 28 days.",
+                                                 context: .steps,
+                                                 isNav: false)
+        
+        ChartContainerView(config: config) {
             
             if chartData.isEmpty {
                 ChartEmptyView(systemImage: "chart.pie", title: "No data", description: "There is no step data from healt app.")
-            
+                
             } else {
                 Chart {
                     ForEach(chartData) { weekday in
@@ -81,8 +77,6 @@ struct StepPieChartView: View {
                 }
             }
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
         .sensoryFeedback(.selection, trigger: selectedDay)
         .onChange(of: selectedWeekday) { oldValue, newValue in
             guard let oldValue, let newValue else { return }

@@ -62,7 +62,7 @@ struct HealthDataListView: View {
             .alert(isPresented: $isShowingAlert, error: writeError) { writeError in
                 // Action
                 switch writeError {
-                case .authNotDetermined, .noData, .unableToCompleteRequest:
+                case .authNotDetermined, .noData, .unableToCompleteRequest, .invalidValue:
                     EmptyView()
                 case .sharingDenied(_):
                     Button("Settings") {
@@ -77,10 +77,17 @@ struct HealthDataListView: View {
             .toolbar{
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Add data") {
+                        guard let value = Double(valueToAdd) else {
+                            writeError = .invalidValue
+                            isShowingAlert = true
+                            valueToAdd = ""
+                            return
+                        }
+                        
                         Task{
                             if metric == .steps {
                                 do {
-                                    try await hkManager.addStepData(for: addDataDate, value: Double(valueToAdd)!)
+                                    try await hkManager.addStepData(for: addDataDate, value: value)
                                     try await hkManager.fetchStepCount()
                                     
                                     isShowingAddData = false
@@ -96,7 +103,7 @@ struct HealthDataListView: View {
                                 
                             } else if metric == .weight {
                                 do {
-                                    try await hkManager.addWeightData(for: addDataDate, value: Double(valueToAdd)!)
+                                    try await hkManager.addWeightData(for: addDataDate, value: value)
                                     try await hkManager.fetchWeignts()
                                     try await hkManager.fetchWeigntForDifferentials()
                                     
