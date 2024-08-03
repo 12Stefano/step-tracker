@@ -10,11 +10,37 @@ import HealthKit
 import Observation
 
 
-enum STError: Error {
+enum STError: LocalizedError {
     case authNotDetermined
     case sharingDenied(quantityType: String)
     case noData
     case unableToCompleteRequest
+    
+    var errorDescription: String? {
+        switch self {
+        case .authNotDetermined:
+            "Need Access to healt data"
+        case .sharingDenied(_):
+            "No write access"
+        case .noData:
+            "No data"
+        case .unableToCompleteRequest:
+            "Unable to complete request"
+        }
+    }
+    
+    var failureReason: String {
+        switch self {
+        case .authNotDetermined:
+            "You have no given access to your healt data.\n\nPlease go to Settings > Healt > Data access & Devices."
+        case .sharingDenied(let quantityType):
+            "You have denied the access to upload your \(quantityType) data.\n\nYou can change this in Settings > Healt > Data access & Devices."
+        case .noData:
+            "There is no data for this healt statistics"
+        case .unableToCompleteRequest:
+            "We are unable to complete your request at this time.\n\nPlase try again later or contact support."
+        }
+    }
     
 }
 
