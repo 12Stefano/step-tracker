@@ -25,12 +25,12 @@ enum HealthMetricContext: CaseIterable, Identifiable {
 }
 
 struct DashboardView: View {
-    @AppStorage("hasSeenPermissionPriming") private var hasSeenPermissionPriming = false
-    
     @Environment(HealthKitManager.self) private var hkManager
     
     @State private var isShowingPermissionPrimingSheet = false
     @State private var selectedStat: HealthMetricContext = .steps
+    @State private var isShowingAlert = false
+    @State private var fetchError: STError = .noData
     
     var isSteps: Bool { selectedStat == .steps }
     
@@ -59,11 +59,20 @@ struct DashboardView: View {
                 }
                 .padding()
                 .task {
-                    await hkManager.fetchStepCount()
-                    await hkManager.fetchWeignts()
-                    await hkManager.fetchWeigntForDifferentials()
-                    
-                    isShowingPermissionPrimingSheet = !hasSeenPermissionPriming
+                    do {
+                        try await hkManager.fetchStepCount()
+                        try await hkManager.fetchWeignts()
+                        try await hkManager.fetchWeigntForDifferentials()
+                        
+                    } catch STError.authNotDetermined {
+                        isShowingPermissionPrimingSheet = true
+                    } catch STError.noData {
+                        fetchError = .noData
+                        isShowingAlert = true
+                    } catch {
+                        fetchError = .unableToCompleteRequest
+                        isShowingAlert = true
+                    }
                 }
             }
             .navigationTitle("Dashboard")
@@ -73,8 +82,13 @@ struct DashboardView: View {
             .sheet(isPresented: $isShowingPermissionPrimingSheet, onDismiss: {
                 // Fetch health data
             }, content: {
-                HealthKitPermissionPrimingView(hasSeen: $hasSeenPermissionPriming)
+                HealthKitPermissionPrimingView()
             })
+            .alert(isPresented: $isShowingAlert, error: fetchError) { fetchError in
+                // Action
+            } message: { fetchError in
+                Text(fetchError.failureReason)
+            }
         }
         .tint(isSteps ? .pink : .indigo)
     }
