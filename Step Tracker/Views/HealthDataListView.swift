@@ -76,50 +76,7 @@ struct HealthDataListView: View {
             
             .toolbar{
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Add data") {
-                        guard let value = Double(valueToAdd) else {
-                            writeError = .invalidValue
-                            isShowingAlert = true
-                            valueToAdd = ""
-                            return
-                        }
-                        
-                        Task{
-                            if metric == .steps {
-                                do {
-                                    try await hkManager.addStepData(for: addDataDate, value: value)
-                                    try await hkManager.fetchStepCount()
-                                    
-                                    isShowingAddData = false
-                                    
-                                } catch STError.sharingDenied(let quantityType) {
-                                    writeError = .sharingDenied(quantityType: quantityType)
-                                    isShowingAlert = true
-                                    
-                                } catch {
-                                    writeError = .unableToCompleteRequest
-                                    isShowingAlert = true
-                                }
-                                
-                            } else if metric == .weight {
-                                do {
-                                    try await hkManager.addWeightData(for: addDataDate, value: value)
-                                    try await hkManager.fetchWeignts()
-                                    try await hkManager.fetchWeigntForDifferentials()
-                                    
-                                    isShowingAddData = false
-                                    
-                                } catch STError.sharingDenied(let quantityType) {
-                                    writeError = .sharingDenied(quantityType: quantityType)
-                                    isShowingAlert = true
-                                    
-                                } catch {
-                                    writeError = .unableToCompleteRequest
-                                    isShowingAlert = true
-                                }
-                            }
-                        }
-                    }
+                    Button("Add data") { addDataToHealtKit() }
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
@@ -131,6 +88,43 @@ struct HealthDataListView: View {
         }
     }
     
+    private func addDataToHealtKit() {
+        guard let value = Double(valueToAdd) else {
+            writeError = .invalidValue
+            isShowingAlert = true
+            valueToAdd = ""
+            return
+        }
+        
+        Task{
+            
+            do {
+                if metric == .steps {
+                    try await hkManager.addStepData(for: addDataDate, value: value)
+                    
+                    hkManager.stepData = try await hkManager.fetchStepCount()
+                } else {
+                    try await hkManager.addWeightData(for: addDataDate, value: value)
+                    
+                    async let weightsForLineChart = hkManager.fetchWeignts(daysBack: 28)
+                    async let weightsForDiffBarChart = hkManager.fetchWeignts(daysBack: 29)
+
+                    hkManager.weightData = try await weightsForLineChart
+                    hkManager.weightDiffData = try await weightsForDiffBarChart
+                }
+                
+                isShowingAddData = false
+                
+            } catch STError.sharingDenied(let quantityType) {
+                writeError = .sharingDenied(quantityType: quantityType)
+                isShowingAlert = true
+                
+            } catch {
+                writeError = .unableToCompleteRequest
+                isShowingAlert = true
+            }
+        }
+    }
 }
 
 #Preview {
