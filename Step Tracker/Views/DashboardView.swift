@@ -47,11 +47,11 @@ struct DashboardView: View {
                     case .steps:
                         StepBarChartView(chartData: ChartHelper.convert(data: hkManager.stepData))
                         
-                        StepPieChartView(chartData: ChartMath.averageWeekdayCount(for: hkManager.stepData))
+                        StepPieChartView(chartData: ChartHelper.averageWeekdayCount(for: hkManager.stepData))
                     case .weight:
                         WeightLineChartView(chartData: ChartHelper.convert(data: hkManager.weightData))
                         
-                        WeightDiffBarChart(chartData: ChartMath.averageDailyWeightDiffs(for: hkManager.weightDiffData))
+                        WeightDiffBarChart(chartData: ChartHelper.averageDailyWeightDiffs(for: hkManager.weightDiffData))
                     }
                     
                 }
