@@ -7,6 +7,12 @@
 
 import SwiftUI
 
+enum ChartType {
+    case stepBar(average: Int)
+    case stepWeekDayPie
+    case weightLine(average: Double)
+    case weightDiffBar
+}
 
 struct ChartContainerConfiguration {
     let title: String
@@ -18,8 +24,12 @@ struct ChartContainerConfiguration {
 
 
 struct ChartContainerView<Content: View>: View {
-    let config: ChartContainerConfiguration
-
+    let chartType: ChartType
+    
+    var config: ChartContainerConfiguration {
+        makeChartConfigurator(chartType: chartType)
+    }
+    
     @ViewBuilder var content: () -> Content
     
     var body: some View {
@@ -31,7 +41,7 @@ struct ChartContainerView<Content: View>: View {
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 12)
             }
-
+            
             content()
             
         }
@@ -64,10 +74,43 @@ struct ChartContainerView<Content: View>: View {
         }
     }
     
+    private func makeChartConfigurator(chartType: ChartType) -> ChartContainerConfiguration {
+        
+        switch chartType {
+        case .stepBar(let average):
+            return ChartContainerConfiguration(title: "Steps",
+                                               symbol: "figure.walk",
+                                               subtitle: "Avg: \(average) steps.",
+                                               context: .steps,
+                                               isNav: true)
+            
+            
+        case .stepWeekDayPie:
+            return ChartContainerConfiguration(title: "Averages",
+                                               symbol: "calendar",
+                                               subtitle: "Last 28 days.",
+                                               context: .steps,
+                                               isNav: false)
+            
+        case .weightLine(let average):
+            return ChartContainerConfiguration(title: "Weigt",
+                                               symbol: "figure",
+                                               subtitle: "Avg: \(average.formatted(.number.precision(.fractionLength(1)))) kg.",
+                                               context: .weight,
+                                               isNav: true)
+            
+        case .weightDiffBar:
+            return ChartContainerConfiguration(title: "Average weight change",
+                                               symbol: "figure",
+                                               subtitle: "Per weekday (last 28 days).",
+                                               context: .weight,
+                                               isNav: false)
+        }
+    }
 }
 
 #Preview {
-    ChartContainerView(config: .init(title: "Title", symbol: "figure.walk", subtitle: "Subtitle", context: .steps, isNav: true)) {
+    ChartContainerView(chartType: .stepWeekDayPie) {
         Text("Chart")
             .frame(minHeight: 150)
     }

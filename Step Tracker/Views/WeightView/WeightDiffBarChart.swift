@@ -20,13 +20,8 @@ struct WeightDiffBarChart: View {
     }
     
     var body: some View {
-        let config = ChartContainerConfiguration(title: "Average weight change",
-                                                 symbol: "figure",
-                                                 subtitle: "Per weekday (last 28 days).",
-                                                 context: .weight,
-                                                 isNav: false)
         
-        ChartContainerView(config: config) {
+        ChartContainerView(chartType: .weightDiffBar) {
             Chart {
                 if let selectedData {
                     ChartAnnotationView(data: selectedData, context: .weight)
