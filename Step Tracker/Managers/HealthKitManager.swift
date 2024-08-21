@@ -20,6 +20,8 @@ class HealthKitManager {
     var weightData: [HealthMetric] = []
     var weightDiffData: [HealthMetric] = []
     
+    /// Fetch last 28 days of step count from HealtKit.
+    /// - Returns: Array of ``HealthMetric``.
     func fetchStepCount() async throws -> [HealthMetric] {
         guard store.authorizationStatus(for: HKQuantityType(.stepCount)) != .notDetermined else {
             throw STError.authNotDetermined
@@ -50,6 +52,9 @@ class HealthKitManager {
         }
     }
     
+    /// Fetch most recent weight sample on each day for a specified number of days back from today.
+    /// - Parameter daysBack: Days back from today. Ex: 28 will return the last 28 days.
+    /// - Returns: Array of ``HealthMetric``.
     func fetchWeignts(daysBack: Int) async throws -> [HealthMetric] {
         guard store.authorizationStatus(for: HKQuantityType(.stepCount)) != .notDetermined else {
             throw STError.authNotDetermined
@@ -80,6 +85,10 @@ class HealthKitManager {
         }
     }
     
+    /// Write step count data to HealtKit. Requires HealtKit write permission.
+    /// - Parameters:
+    ///   - date: Date for step count value.
+    ///   - value: Step count value.
     func addStepData(for date: Date, value: Double) async throws {
         let status = store.authorizationStatus(for: HKQuantityType(.stepCount))
         switch status {
@@ -102,6 +111,10 @@ class HealthKitManager {
         }
     }
     
+    /// Write weight count data to HealtKit. Requires HealtKit write permission.
+    /// - Parameters:
+    ///   - date: Date for weight value.
+    ///   - value: Weight value in grams. Uses grams as a Double for .bodyMass conversions.
     func addWeightData(for date: Date, value: Double) async throws {
         let status = store.authorizationStatus(for: HKQuantityType(.bodyMass))
         switch status {
@@ -125,6 +138,11 @@ class HealthKitManager {
         }
     }
     
+    /// Create a DateInterval between two dates.
+    /// - Parameters:
+    ///   - date: End of the date interval. Ex: today
+    ///   - daysBack: Start of the date interval. Ex: 28 days ago
+    /// - Returns: Date range between two dates as a DateInterval
     private func createDateInterval(from date: Date, daysBack: Int) -> DateInterval {
         let calendar = Calendar.current
         let startOfEndDate = calendar.startOfDay(for: date)
