@@ -46,7 +46,7 @@ struct WeightDiffBarChart: View {
                     AxisGridLine()
                         .foregroundStyle(Color.secondary.opacity(0.3))
                     
-                    AxisValueLabel((value.as(Double.self) ?? 0).formatted(.number.notation(.compactName)))
+                    AxisValueLabel("\((value.as(Double.self) ?? 0).formatted(.number.scale(0.001))) kg")
                 }
             }
             .overlay {
