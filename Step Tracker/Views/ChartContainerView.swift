@@ -20,6 +20,7 @@ struct ChartContainerConfiguration {
     let subtitle: String
     let context: HealthMetricContext
     let isNav: Bool
+    let accessibilityLabel: String
 }
 
 
@@ -61,6 +62,7 @@ struct ChartContainerView<Content: View>: View {
         }
         .foregroundStyle(.secondary)
         .padding(.bottom, 12)
+        .accessibilityHint("Tap for data in list view.")
     }
     
     var titleView: some View {
@@ -72,6 +74,9 @@ struct ChartContainerView<Content: View>: View {
             Text(config.subtitle)
                 .font(.caption)
         }
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityLabel(config.accessibilityLabel)
+        .accessibilityElement(children: .ignore)  // Elements inside VStak will not be read
     }
     
     private func makeChartConfigurator(chartType: ChartType) -> ChartContainerConfiguration {
@@ -82,7 +87,8 @@ struct ChartContainerView<Content: View>: View {
                                                symbol: "figure.walk",
                                                subtitle: "Avg: \(average) steps.",
                                                context: .steps,
-                                               isNav: true)
+                                               isNav: true,
+                                               accessibilityLabel: "Bar chart, step count, last 28 days, average steps per day: \(average) steps.")
             
             
         case .stepWeekDayPie:
@@ -90,21 +96,24 @@ struct ChartContainerView<Content: View>: View {
                                                symbol: "calendar",
                                                subtitle: "Last 28 days.",
                                                context: .steps,
-                                               isNav: false)
+                                               isNav: false,
+                                               accessibilityLabel: "Pie chart, average steps per weekday.")
             
         case .weightLine(let average):
             return ChartContainerConfiguration(title: "Weigt",
                                                symbol: "figure",
                                                subtitle: "Avg: \(average.formatted(.number.precision(.fractionLength(1)))) kg.",
                                                context: .weight,
-                                               isNav: true)
+                                               isNav: true,
+                                               accessibilityLabel:"Line chart, weight, average weigt \(average.formatted(.number.precision(.fractionLength(1)))) kg, goal 70 kg.")
             
         case .weightDiffBar:
             return ChartContainerConfiguration(title: "Average weight change",
                                                symbol: "figure",
                                                subtitle: "Per weekday (last 28 days).",
                                                context: .weight,
-                                               isNav: false)
+                                               isNav: false,
+                                               accessibilityLabel:"Bar chart, average weight difference per weekday.")
         }
     }
 }
