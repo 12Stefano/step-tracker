@@ -32,8 +32,6 @@ struct DashboardView: View {
     @State private var isShowingAlert = false
     @State private var fetchError: STError = .noData
     
-    var isSteps: Bool { selectedStat == .steps }
-    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -49,38 +47,23 @@ struct DashboardView: View {
                     case .steps:
                         StepBarChartView(chartData: ChartHelper.convert(data: hkManager.stepData))
                         
-                        StepPieChartView(chartData: ChartMath.averageWeekdayCount(for: hkManager.stepData))
+                        StepPieChartView(chartData: ChartHelper.averageWeekdayCount(for: hkManager.stepData))
                     case .weight:
                         WeightLineChartView(chartData: ChartHelper.convert(data: hkManager.weightData))
                         
-                        WeightDiffBarChart(chartData: ChartMath.averageDailyWeightDiffs(for: hkManager.weightDiffData))
+                        WeightDiffBarChart(chartData: ChartHelper.averageDailyWeightDiffs(for: hkManager.weightDiffData))
                     }
                     
                 }
                 .padding()
-                .task {
-                    do {
-                        try await hkManager.fetchStepCount()
-                        try await hkManager.fetchWeignts()
-                        try await hkManager.fetchWeigntForDifferentials()
-                        
-                    } catch STError.authNotDetermined {
-                        isShowingPermissionPrimingSheet = true
-                    } catch STError.noData {
-                        fetchError = .noData
-                        isShowingAlert = true
-                    } catch {
-                        fetchError = .unableToCompleteRequest
-                        isShowingAlert = true
-                    }
-                }
+                .task { fetchHealtData() }
             }
             .navigationTitle("Dashboard")
             .navigationDestination(for: HealthMetricContext.self) { metric in
                 HealthDataListView(metric: metric)
             }
-            .sheet(isPresented: $isShowingPermissionPrimingSheet, onDismiss: {
-                // Fetch health data
+            .fullScreenCover(isPresented: $isShowingPermissionPrimingSheet, onDismiss: {
+                fetchHealtData()
             }, content: {
                 HealthKitPermissionPrimingView()
             })
@@ -90,9 +73,31 @@ struct DashboardView: View {
                 Text(fetchError.failureReason)
             }
         }
-        .tint(isSteps ? .pink : .indigo)
+        .tint(selectedStat == .steps ? .pink : .indigo)
     }
     
+    private func fetchHealtData() {
+        Task{
+            do {
+                async let steps = hkManager.fetchStepCount()
+                async let weightsForLineChart = hkManager.fetchWeignts(daysBack: 28)
+                async let weightsForDiffBarChart = hkManager.fetchWeignts(daysBack: 29)
+                
+                hkManager.stepData = try await steps
+                hkManager.weightData = try await weightsForLineChart
+                hkManager.weightDiffData = try await weightsForDiffBarChart
+                
+            } catch STError.authNotDetermined {
+                isShowingPermissionPrimingSheet = true
+            } catch STError.noData {
+                fetchError = .noData
+                isShowingAlert = true
+            } catch {
+                fetchError = .unableToCompleteRequest
+                isShowingAlert = true
+            }
+        }
+    }
 }
 
 #Preview {

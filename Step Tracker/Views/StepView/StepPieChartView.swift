@@ -25,48 +25,41 @@ struct StepPieChartView: View {
     }
     
     var body: some View {
-        let config = ChartContainerConfiguration(title: "Averages", 
-                                                 symbol: "calendar",
-                                                 subtitle: "Last 28 days.",
-                                                 context: .steps,
-                                                 isNav: false)
-        
-        ChartContainerView(config: config) {
-            
-            if chartData.isEmpty {
-                ChartEmptyView(systemImage: "chart.pie", title: "No data", description: "There is no step data from healt app.")
-                
-            } else {
-                Chart {
-                    ForEach(chartData) { weekday in
-                        SectorMark(angle: .value("Average steps", weekday.value),
-                                   innerRadius: .ratio(0.618),
-                                   outerRadius: selectedWeekday?.date.weekdayInt == weekday.date.weekdayInt ? 140 : 110,
-                                   angularInset: 1)
-                        .foregroundStyle(.pink)
-                        .cornerRadius(6)
-                        .opacity(selectedWeekday?.date.weekdayInt == weekday.date.weekdayInt ? 1.0 : 0.3)
-                    }
+
+        ChartContainerView(chartType: .stepWeekDayPie) {
+            Chart {
+                ForEach(chartData) { weekday in
+                    SectorMark(angle: .value("Average steps", weekday.value),
+                               innerRadius: .ratio(0.618),
+                               outerRadius: selectedWeekday?.date.weekdayInt == weekday.date.weekdayInt ? 140 : 110,
+                               angularInset: 1)
+                    .foregroundStyle(.pink)
+                    .cornerRadius(6)
+                    .opacity(selectedWeekday?.date.weekdayInt == weekday.date.weekdayInt ? 1.0 : 0.3)
+                    .accessibilityLabel(weekday.date.weekdayTitle)
+                    .accessibilityValue("\(Int(weekday.value)) steps")
                 }
-                .chartAngleSelection(value: $rawSelectedChartValue.animation(.easeInOut))
-                .frame(height: 240)
-                .chartBackground { proxy in
-                    GeometryReader { geo in
-                        if let plotFrame = proxy.plotFrame {
-                            let frame = geo[plotFrame]
-                            if let selectedWeekday {
-                                VStack {
-                                    Text(selectedWeekday.date.weekdayTitle)
-                                        .font(.title3.bold())
-                                        .contentTransition(.identity)
-                                    
-                                    Text(selectedWeekday.value, format: .number.precision(.fractionLength(0)))
-                                        .fontWeight(.medium)
-                                        .foregroundStyle(.secondary)
-                                        .contentTransition(.numericText())
-                                }
-                                .position(x: frame.midX, y: frame.midY)
-                            } else {
+            }
+            .chartAngleSelection(value: $rawSelectedChartValue.animation(.easeInOut))
+            .frame(height: 240)
+            .chartBackground { proxy in
+                GeometryReader { geo in
+                    if let plotFrame = proxy.plotFrame {
+                        let frame = geo[plotFrame]
+                        if let selectedWeekday {
+                            VStack {
+                                Text(selectedWeekday.date.weekdayTitle)
+                                    .font(.title3.bold())
+                                    .animation(.none)
+                                
+                                Text(selectedWeekday.value, format: .number.precision(.fractionLength(0)))
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.secondary)
+                                    .contentTransition(.numericText())
+                            }
+                            .position(x: frame.midX, y: frame.midY)
+                        } else {
+                            if !chartData.isEmpty {
                                 Image(systemName: "hand.tap")
                                     .font(.title3.bold())
                                     .contentTransition(.identity)
@@ -74,6 +67,11 @@ struct StepPieChartView: View {
                             }
                         }
                     }
+                }
+            }
+            .overlay {
+                if chartData.isEmpty {
+                    ChartEmptyView(systemImage: "chart.pie", title: "No data", description: "There is no step data from healt app.")
                 }
             }
         }
@@ -89,5 +87,5 @@ struct StepPieChartView: View {
 }
 
 #Preview {
-    StepPieChartView(chartData: ChartMath.averageWeekdayCount(for: MockData.steps))
+    StepPieChartView(chartData: ChartHelper.averageWeekdayCount(for: MockData.steps))
 }

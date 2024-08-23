@@ -23,35 +23,32 @@ struct WeightLineChartView: View {
         ChartHelper.parseSelectedData(from: chartData, in: rawSelectedDate)
     }
     
+    var averageWeight: Double {
+        chartData.map {$0.value}.average/1_000
+    }
+    
     var body: some View {
-        let config = ChartContainerConfiguration(title: "Weigt", 
-                                                 symbol: "figure",
-                                                 subtitle: "Avg:  70 kg.",
-                                                 context: .weight, isNav: true)
         
-        ChartContainerView(config: config) {
-            
-            if chartData.isEmpty {
-                ChartEmptyView(systemImage: "chart.xyaxis.line", title: "No data", description: "There is no step data from healt app.")
+        ChartContainerView(chartType: .weightLine(average: averageWeight)) {
+            Chart {
+                if let selectedData {
+                    ChartAnnotationView(data: selectedData, context: .weight)
+                }
                 
-            } else {
+                RuleMark(y: .value("Goal", 70_000))
+                    .foregroundStyle(.mint)
+                    .lineStyle(.init(lineWidth: 1, dash: [5]))
+                    .accessibilityHidden(true)
                 
-                Chart {
-                    if let selectedData {
-                        ChartAnnotationView(data: selectedData, context: .weight)
-                    }
-                    
-                    RuleMark(y: .value("Goal", 70_000))
-                        .foregroundStyle(.mint)
-                        .lineStyle(.init(lineWidth: 1, dash: [5]))
-                    
-                    ForEach(chartData) { weight in
+                ForEach(chartData) { weight in
+                    Plot {
                         AreaMark(
                             x: .value("Day", weight.date, unit: .day),
                             yStart: .value("Value", weight.value),
                             yEnd: .value("Min Value", minValue)
                         )
                         .foregroundStyle(Gradient(colors: [.indigo.opacity(0.5), .clear]))
+                        
                         
                         LineMark(
                             x: .value("Day", weight.date, unit: .day),
@@ -61,22 +58,29 @@ struct WeightLineChartView: View {
                         .interpolationMethod(.catmullRom)
                         .symbol(.circle)
                     }
+                    .accessibilityLabel(weight.date.accessibilityDate)
+                    .accessibilityValue("\(weight.value.formatted(.number.precision(.fractionLength(1)))) kg")
                 }
-                .frame(height: 150)
-                .chartXSelection(value: $rawSelectedDate)
-                .chartYScale(domain:.automatic(includesZero: false))
-                .chartXAxis {
-                    AxisMarks {
-                        AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
-                    }
+            }
+            .frame(height: 150)
+            .chartXSelection(value: $rawSelectedDate)
+            .chartYScale(domain:.automatic(includesZero: false))
+            .chartXAxis {
+                AxisMarks {
+                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
                 }
-                .chartYAxis {
-                    AxisMarks { value in
-                        AxisGridLine()
-                            .foregroundStyle(Color.secondary.opacity(0.3))
-                        
-                        AxisValueLabel((value.as(Double.self) ?? 0).formatted(.number.scale(0.001)))
-                    }
+            }
+            .chartYAxis {
+                AxisMarks { value in
+                    AxisGridLine()
+                        .foregroundStyle(Color.secondary.opacity(0.3))
+                    
+                    AxisValueLabel("\((value.as(Double.self) ?? 0).formatted(.number.scale(0.001))) kg")
+                }
+            }
+            .overlay {
+                if chartData.isEmpty {
+                    ChartEmptyView(systemImage: "chart.xyaxis.line", title: "No data", description: "There is no step data from healt app.")
                 }
             }
         }

@@ -19,53 +19,59 @@ struct StepBarChartView: View {
         ChartHelper.parseSelectedData(from: chartData, in: rawSelectedDate)
     }
     
+    var averageSteps: Int {
+        Int(chartData.map {$0.value}.average)
+    }
+    
     var body: some View {
-        let config = ChartContainerConfiguration(title: "Steps",
-                                                 symbol: "figure.walk",
-                                                 subtitle: "Avg: \(Int(ChartHelper.avgValue(for: chartData))) steps",
-                                                 context: .steps,
-                                                 isNav: true)
-        
-        
-        ChartContainerView(config: config) {
-            if chartData.isEmpty {
-                ChartEmptyView(systemImage: "chart.bar", title: "No data", description: "There is no step data from healt app.")
+
+        ChartContainerView(chartType: .stepBar(average: averageSteps)) {
+            
+            Chart {
+                if let selectedData {
+                    ChartAnnotationView(data: selectedData, context: .steps)
+                }
                 
-            } else {
-                
-                Chart {
-                    if let selectedData {
-                        ChartAnnotationView(data: selectedData, context: .steps)
-                    }
-                    
-                    RuleMark(y: .value("Average", ChartHelper.avgValue(for: chartData)))
+                if !chartData.isEmpty {
+                    RuleMark(y: .value("Average", averageSteps))
                         .foregroundStyle(Color.secondary)
                         .lineStyle(.init(lineWidth: 1, dash: [5]))
-                    
-                    ForEach(chartData) { steps in
+                        .accessibilityHidden(true)
+                }
+                
+                ForEach(chartData) { steps in
+                    Plot {
                         BarMark(x: .value("Date", steps.date, unit: .day),
                                 y: .value("Steps", steps.value)
                         )
                         .foregroundStyle(Color.pink.gradient)
                         .opacity(rawSelectedDate == nil || steps.date == selectedData?.date ? 1.0 : 0.3)
                     }
-                }
-                .frame(height: 150)
-                .chartXSelection(value: $rawSelectedDate.animation(.easeInOut))
-                .chartXAxis {
-                    AxisMarks {
-                        AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
-                    }
-                }
-                .chartYAxis {
-                    AxisMarks { value in
-                        AxisGridLine()
-                            .foregroundStyle(Color.secondary.opacity(0.3))
-                        
-                        AxisValueLabel((value.as(Double.self) ?? 0).formatted(.number.notation(.compactName)))
-                    }
+                    .accessibilityLabel(steps.date.accessibilityDate)
+                    .accessibilityValue("\(Int(steps.value)) steps")
                 }
             }
+            .frame(height: 150)
+            .chartXSelection(value: $rawSelectedDate.animation(.easeInOut))
+            .chartXAxis {
+                AxisMarks {
+                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
+                }
+            }
+            .chartYAxis {
+                AxisMarks { value in
+                    AxisGridLine()
+                        .foregroundStyle(Color.secondary.opacity(0.3))
+                    
+                    AxisValueLabel((value.as(Double.self) ?? 0).formatted(.number.notation(.compactName)))
+                }
+            }
+            .overlay {
+                if chartData.isEmpty {
+                    ChartEmptyView(systemImage: "chart.bar", title: "No data", description: "There is no step data from healt app.")
+                }
+            }
+            
         }
         
         .sensoryFeedback(.selection, trigger: selectedDay)
