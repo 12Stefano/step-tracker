@@ -11,10 +11,12 @@ import SwiftUI
 struct Step_TrackerApp: App {
     
     let hkmanager = HealthKitManager()
+    let hkData = HealthKitData()
     
     var body: some Scene {
         WindowGroup {
             DashboardView()
+                .environment(hkData)
                 .environment(hkmanager)
         }
     }
