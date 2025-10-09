@@ -28,17 +28,18 @@ struct WeightLineChartView: View {
     }
     
     var body: some View {
-        
         ChartContainerView(chartType: .weightLine(average: averageWeight)) {
             Chart {
                 if let selectedData {
                     ChartAnnotationView(data: selectedData, context: .weight)
                 }
                 
-                RuleMark(y: .value("Goal", 70_000))
-                    .foregroundStyle(.mint)
-                    .lineStyle(.init(lineWidth: 1, dash: [5]))
-                    .accessibilityHidden(true)
+                if !chartData.isEmpty {
+                    RuleMark(y: .value("Goal", 70_000))
+                        .foregroundStyle(.mint)
+                        .lineStyle(.init(lineWidth: 1, dash: [5]))
+                        .accessibilityHidden(true)
+                }
                 
                 ForEach(chartData) { weight in
                     Plot {
