@@ -74,6 +74,15 @@ struct DashboardView: View {
             .navigationTitle("Dashboard")
             .toolbarTitleDisplayMode(.inlineLarge)
             .background(LinearGradient(colors: [metricColor.opacity(0.25), .clear], startPoint: .topLeading, endPoint: .bottomTrailing))
+            .toolbar {
+                if #available(iOS 26, macOS 26, *) {
+                    if DataAnalyzer.shared.isAvailable {
+                        Button("Analyze data", systemImage: "apple.intelligence") {
+                            
+                        }
+                    }
+                }
+            }
             .navigationDestination(for: HealthMetricContext.self) { metric in
                 HealthDataListView(metric: metric)
             }
