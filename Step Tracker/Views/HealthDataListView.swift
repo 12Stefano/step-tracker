@@ -23,6 +23,10 @@ struct HealthDataListView: View {
         metric == .steps ? hkData.stepData : hkData.weightData
     }
     
+    var backgroundColor: Color {
+        metric == .steps ? .pink : .indigo
+    }
+    
     var body: some View {
         List(listData.reversed()) { data in
             LabeledContent {
@@ -31,9 +35,12 @@ struct HealthDataListView: View {
                 Text(data.date, format: .dateTime.month().day().year())
                     .accessibilityLabel(data.date.accessibilityDate)
             }
+            .listRowBackground(Color(.secondarySystemBackground).opacity(0.35))
             .accessibilityElement(children: .combine)
         }
         .navigationTitle(metric.title)
+        .scrollContentBackground(.hidden)
+        .background(LinearGradient(colors: [backgroundColor.opacity(0.25), .clear], startPoint: .topLeading, endPoint: .bottomTrailing))
         
         .sheet(isPresented: $isShowingAddData) {
             addDataView
@@ -136,5 +143,6 @@ struct HealthDataListView: View {
     NavigationStack{
         HealthDataListView(metric: .weight)
             .environment(HealthKitManager())
+            .environment(HealthKitData())
     }
 }

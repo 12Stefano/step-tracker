@@ -47,7 +47,11 @@ struct ChartContainerView<Content: View>: View {
             
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(.gray.opacity(0.5), lineWidth: 0.6)
+                .fill(Color(.secondarySystemBackground).gradient.opacity(0.5))
+        )
     }
     
     var navigationLinkView: some View {
