@@ -35,7 +35,7 @@ struct WeightLineChartView: View {
                 }
                 
                 if !chartData.isEmpty {
-                    RuleMark(y: .value("Goal", 70_000))
+                    RuleMark(y: .value("Goal", 70))
                         .foregroundStyle(.mint)
                         .lineStyle(.init(lineWidth: 1, dash: [5]))
                         .accessibilityHidden(true)
@@ -76,7 +76,7 @@ struct WeightLineChartView: View {
                     AxisGridLine()
                         .foregroundStyle(Color.secondary.opacity(0.3))
                     
-                    AxisValueLabel("\((value.as(Double.self) ?? 0).formatted(.number.scale(0.001))) kg")
+                    AxisValueLabel("\((value.as(Double.self) ?? 0).formatted(.number.precision(.fractionLength(1)))) kg")
                 }
             }
             .overlay {

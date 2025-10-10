@@ -78,7 +78,7 @@ struct DashboardView: View {
                 if #available(iOS 26, macOS 26, *) {
                     if DataAnalyzer.shared.isAvailable {
                         Button("Analyze data", systemImage: "apple.intelligence") {
-                            
+                            Task { await DataAnalyzer.shared.analyzeHealthData() }
                         }
                     }
                 }

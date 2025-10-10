@@ -80,7 +80,7 @@ final class HealthKitManager: Sendable {
             let weights = try await weightsQuery.result(for: store)
             
             return weights.statistics().map {
-                .init(date: $0.startDate, value: $0.mostRecentQuantity()?.doubleValue(for: .gram()) ?? 0)
+                .init(date: $0.startDate, value: $0.mostRecentQuantity()?.doubleValue(for: .gramUnit(with: .kilo)) ?? 0)
             }
         } catch HKError.errorNoData {
             throw STError.noData
@@ -132,7 +132,7 @@ final class HealthKitManager: Sendable {
             break
         }
         
-        let weightQuantity = HKQuantity(unit: .gram(), doubleValue: value)
+        let weightQuantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: value)
         let weightSample = HKQuantitySample(type: HKQuantityType(.bodyMass), quantity: weightQuantity, start: date, end: date)
         
         do {
@@ -163,7 +163,8 @@ final class HealthKitManager: Sendable {
         
         for i in 0..<28 {
             let stepQuantity = HKQuantity(unit: .count(), doubleValue: .random(in: 4_000...20_000))
-            let weightQuantity = HKQuantity(unit: .gram(), doubleValue: .random(in: ((65 + Double(i/3))*1000...(70 + Double(i/3))*1000)))
+            let weightKg = Double.random(in: (65 + Double(i)/3)...(70 + Double(i)/3))
+            let weightQuantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: weightKg)
             let startDate = Calendar.current.date(byAdding: .day, value: -i, to: .now)!
             let endDate = Calendar.current.date(byAdding: .second, value: 1, to: startDate)!
             
