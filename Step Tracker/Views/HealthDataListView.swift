@@ -11,6 +11,8 @@ struct HealthDataListView: View {
     @Environment(HealthKitManager.self) private var hkManager
     @Environment(HealthKitData.self) private var hkData
     
+    @Namespace var zoomTransition
+    
     @State private var isShowingAddData: Bool = false
     @State private var addDataDate: Date = .now
     @State private var valueToAdd: String = ""
@@ -23,6 +25,10 @@ struct HealthDataListView: View {
         metric == .steps ? hkData.stepData : hkData.weightData
     }
     
+    var metricColor: Color {
+        metric == .steps ? .pink : .indigo
+    }
+    
     var body: some View {
         List(listData.reversed()) { data in
             LabeledContent {
@@ -31,16 +37,45 @@ struct HealthDataListView: View {
                 Text(data.date, format: .dateTime.month().day().year())
                     .accessibilityLabel(data.date.accessibilityDate)
             }
+            .listRowBackground(Color(.secondarySystemBackground).opacity(0.35))
             .accessibilityElement(children: .combine)
         }
         .navigationTitle(metric.title)
+        .scrollContentBackground(.hidden)
+        .background(LinearGradient(colors: [metricColor.opacity(0.25), .clear], startPoint: .topLeading, endPoint: .bottomTrailing))
         
         .sheet(isPresented: $isShowingAddData) {
-            addDataView
+            if #available(iOS 26, macOS 26, *) {
+                addDataView
+                    .presentationDetents([.fraction(0.4)])
+                    .scrollContentBackground(.hidden)
+                    .navigationTransition(.zoom(sourceID: "addData", in: zoomTransition))
+            } else {
+                addDataView
+                    .presentationDetents([.fraction(0.4)])
+            }
+        }
+        .overlay {
+            if listData.isEmpty {
+                ContentUnavailableView("No \(metric.title) to display", systemImage: metric == .steps ? "figure.walk" : "figure")
+            }
         }
         .toolbar{
-            Button("Add Data", systemImage: "plus") {
-                isShowingAddData = true
+                if #available(iOS 26, macOS 26, *) {
+                    ToolbarItem {
+                        Button("Add Data", systemImage: "plus") {
+                            isShowingAddData = true
+                        }
+                        .buttonStyle(.glassProminent)
+                        .tint(metricColor)
+                    }
+                    .matchedTransitionSource(id: "addData", in: zoomTransition)
+                } else {
+                    ToolbarItem {
+                    Button("Add Data", systemImage: "plus") {
+                        isShowingAddData = true
+                    }
+                }
             }
         }
     }
@@ -58,7 +93,8 @@ struct HealthDataListView: View {
                 }
                 
             }
-            .navigationTitle(metric.title)
+            .navigationTitle("Add new")
+            .navigationBarTitleDisplayMode(.inline)
             .alert(isPresented: $isShowingAlert, error: writeError) { writeError in
                 // Action
                 switch writeError {
@@ -76,13 +112,21 @@ struct HealthDataListView: View {
             
             .toolbar{
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Add data") { addDataToHealtKit() }
+                    if #available(iOS 26, macOS 26, *) {
+                        Button("Add data", role: .confirm) { addDataToHealtKit() }
+                            .tint(metricColor)
+                    } else {
+                        Button("Add data") { addDataToHealtKit() }
+                    }
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Dismiss") {
-                        isShowingAddData = false
+                    if #available(iOS 26, macOS 26, *) {
+                        Button("Dismiss", role: .close) { isShowingAddData = false }
+                    } else {
+                        Button("Dismiss") { isShowingAddData = false }
                     }
+                    
                 }
             }
         }
@@ -108,7 +152,7 @@ struct HealthDataListView: View {
                     
                     async let weightsForLineChart = hkManager.fetchWeignts(daysBack: 28)
                     async let weightsForDiffBarChart = hkManager.fetchWeignts(daysBack: 29)
-
+                    
                     hkData.weightData = try await weightsForLineChart
                     hkData.weightDiffData = try await weightsForDiffBarChart
                 }
@@ -131,5 +175,6 @@ struct HealthDataListView: View {
     NavigationStack{
         HealthDataListView(metric: .weight)
             .environment(HealthKitManager())
+            .environment(HealthKitData())
     }
 }

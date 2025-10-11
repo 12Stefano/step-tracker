@@ -32,6 +32,7 @@ struct WeightDiffBarChart: View {
                         BarMark(x: .value("Date", weightDiff.date, unit: .day),
                                 y: .value("weightDiff", weightDiff.value)
                         )
+                        .cornerRadius(5)
                         .foregroundStyle(weightDiff.value >= 0 ? Color.indigo.gradient : Color.mint.gradient)
                     }
                     .accessibilityLabel(weightDiff.date.weekdayTitle)
@@ -50,7 +51,7 @@ struct WeightDiffBarChart: View {
                     AxisGridLine()
                         .foregroundStyle(Color.secondary.opacity(0.3))
                     
-                    AxisValueLabel("\((value.as(Double.self) ?? 0).formatted(.number.scale(0.001))) kg")
+                    AxisValueLabel("\((value.as(Double.self) ?? 0).formatted(.number.precision(.fractionLength(1)))) kg")
                 }
             }
             .overlay {
