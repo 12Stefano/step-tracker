@@ -14,6 +14,8 @@ import Playgrounds
 final class DataAnalyzer {
     static let shared = DataAnalyzer()
     let model: SystemLanguageModel = .default
+    var isThinking: Bool = false
+    var streamingMessage: String.PartiallyGenerated?
     
     // TODO: Implement different unavailable messages
     var isAvailable: Bool {
@@ -34,6 +36,7 @@ final class DataAnalyzer {
     private init() {}
     
     func analyzeHealthData() async {
+        isThinking = true
         let session = LanguageModelSession(tools: [HealthDataTool()],
                                            instructions: "You are a high-energy motivational fitness coach. You love to analyze step and weight data to surface valuable insights and motivate people along their fitness journeys and help them with their fitness goals."
         )
@@ -54,8 +57,13 @@ final class DataAnalyzer {
             """
         
         do {
-            let response = try await session.respond(to: prompt)
-            print(response.content)
+            let stream = session.streamResponse(to: prompt)
+            for try await partial in stream {
+                isThinking = false
+                if partial.content != "null" {
+                    streamingMessage = partial.content
+                }
+            }
         } catch {
             print(error.localizedDescription)
         }

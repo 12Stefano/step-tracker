@@ -28,10 +28,13 @@ struct DashboardView: View {
     @Environment(HealthKitManager.self) private var hkManager
     @Environment(HealthKitData.self) private var hkData
     
+    @Namespace var zoomTransition
+    
     @State private var isShowingPermissionPrimingSheet = false
     @State private var selectedStat: HealthMetricContext = .steps
     @State private var isShowingAlert = false
     @State private var fetchError: STError = .noData
+    @State private var isShowingCoachView: Bool = false
     
     var metricColor: Color {
         selectedStat == .steps ? .pink : .indigo
@@ -77,9 +80,13 @@ struct DashboardView: View {
             .toolbar {
                 if #available(iOS 26, macOS 26, *) {
                     if DataAnalyzer.shared.isAvailable {
-                        Button("Analyze data", systemImage: "apple.intelligence") {
-                            Task { await DataAnalyzer.shared.analyzeHealthData() }
+                        ToolbarItem {
+                            Button("Analyze data", systemImage: "apple.intelligence") {
+                                isShowingCoachView.toggle()
+                                Task { await DataAnalyzer.shared.analyzeHealthData() }
+                            }
                         }
+                        .matchedTransitionSource(id: "coachView", in: zoomTransition)
                     }
                 }
             }
@@ -91,6 +98,7 @@ struct DashboardView: View {
             }, content: {
                 HealthKitPermissionPrimingView()
             })
+            .backportSheet(isPresented: $isShowingCoachView, namespace: zoomTransition)
             .alert(isPresented: $isShowingAlert, error: fetchError) { fetchError in
                 // Action
             } message: { fetchError in

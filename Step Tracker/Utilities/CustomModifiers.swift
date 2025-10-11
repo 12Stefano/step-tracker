@@ -24,3 +24,22 @@ struct ProminentButton: ViewModifier {
     }
 }
 
+struct BackportSheet: ViewModifier {
+    @Binding var isPresented: Bool
+    let namespace: Namespace.ID
+    func body(content: Content) -> some View {
+        if #available(iOS 26, macOS 26, *) {
+            content
+                .sheet(isPresented: $isPresented) {
+                    DataAnalyzer.shared.streamingMessage = ""
+                } content: {
+                    CoachView()
+                        .presentationDetents([.fraction(0.8)])
+                        .navigationTransition(.zoom(sourceID: "coachView", in: namespace))
+                }
+               
+        } else {
+            content
+        }
+    }
+}
